@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
+import { isLoggedIn } from '@/lib/utils'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,10 +35,6 @@ const router = createRouter({
     // },
   ],
 })
-
-const isLoggedIn = () => {
-  return localStorage.getItem('TOKEN') !== null && localStorage.getItem('USER') !== null
-}
 
 router.beforeEach((to, from) => {
   // instead of having to check every route record with

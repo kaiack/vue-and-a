@@ -1,10 +1,28 @@
 <script setup lang="ts">
+import { ForumClient } from '@/lib/requests'
+import { setUser } from '@/lib/utils'
+import router from '@/router'
+import { AxiosError } from 'axios'
 import { ref } from 'vue'
-const handleSubmit = (event: Event) => {
-  console.log(email.value, password.value)
+
+const getInitialData = () => ({ email: '', password: '' })
+
+const formData = ref(getInitialData())
+
+const handleSubmit = async (event: Event) => {
+  // TODO: Add toast for error
+  try {
+    const response = await ForumClient.post('auth/login', {
+      email: formData.value.email,
+      password: formData.value.password,
+    })
+    setUser(response.data.token, response.data.userId)
+    formData.value = getInitialData()
+    router.push('/')
+  } catch (error) {
+    console.log('error', (error as AxiosError).message)
+  }
 }
-const email = ref('')
-const password = ref('')
 </script>
 
 <template>
@@ -31,7 +49,12 @@ const password = ref('')
                   d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z"
                 />
               </svg>
-              <input type="email" class="grow" placeholder="email@example.com" v-model="email" />
+              <input
+                type="email"
+                class="grow"
+                placeholder="email@example.com"
+                v-model="formData.email"
+              />
             </label>
           </div>
           <div class="form-control mt-4">
@@ -51,7 +74,12 @@ const password = ref('')
                   clip-rule="evenodd"
                 />
               </svg>
-              <input type="password" class="grow" placeholder="Enter password" v-model="password" />
+              <input
+                type="password"
+                class="grow"
+                placeholder="Enter password"
+                v-model="formData.password"
+              />
             </label>
           </div>
           <div class="form-control mt-6">
@@ -59,7 +87,7 @@ const password = ref('')
           </div>
         </form>
         <div class="text-center">
-          <p>Don't have an account?</p>
+          <p class="inline mr-2">Don't have an account?</p>
           <RouterLink to="/register" class="link link-primary">Register</RouterLink>
         </div>
       </div>

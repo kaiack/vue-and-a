@@ -9,7 +9,7 @@ import router from './router'
 
 const app = createApp(App)
 
-app.use(createPinia())
+// app.use(createPinia())
 app.use(VueQueryPlugin)
 app.use(router)
 

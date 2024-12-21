@@ -1,11 +1,28 @@
 <script setup lang="ts">
+import { ForumClient } from '@/lib/requests'
+import { setUser } from '@/lib/utils'
+import router from '@/router'
+import { AxiosError } from 'axios'
 import { ref } from 'vue'
-const handleSubmit = (event: Event) => {
-  console.log(name.value, password.value, email.value)
+
+const getInitialData = () => ({ name: '', email: '', password: '' })
+
+const formData = ref(getInitialData())
+
+const handleSubmit = async (event: Event) => {
+  try {
+    const response = await ForumClient.post('auth/register', {
+      email: formData.value.email,
+      password: formData.value.password,
+      name: formData.value.name,
+    })
+    setUser(response.data.token, response.data.userId)
+    formData.value = getInitialData()
+    router.push('/')
+  } catch (error) {
+    console.log('error', (error as AxiosError).message)
+  }
 }
-const name = ref('')
-const email = ref('')
-const password = ref('')
 </script>
 
 <template>
@@ -32,7 +49,12 @@ const password = ref('')
                   d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z"
                 />
               </svg>
-              <input type="email" class="grow" placeholder="email@example.com" v-model="email" />
+              <input
+                type="email"
+                class="grow"
+                placeholder="email@example.com"
+                v-model="formData.email"
+              />
             </label>
           </div>
           <div class="form-control mt-4">
@@ -50,7 +72,7 @@ const password = ref('')
                   d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z"
                 />
               </svg>
-              <input type="text" class="grow" placeholder="Enter name" v-model="name" />
+              <input type="text" class="grow" placeholder="Enter name" v-model="formData.name" />
             </label>
           </div>
           <div class="form-control mt-4">
@@ -70,13 +92,22 @@ const password = ref('')
                   clip-rule="evenodd"
                 />
               </svg>
-              <input type="password" class="grow" placeholder="Enter password" v-model="password" />
+              <input
+                type="password"
+                class="grow"
+                placeholder="Enter password"
+                v-model="formData.password"
+              />
             </label>
           </div>
           <div class="form-control mt-6">
             <button class="btn btn-primary">Register</button>
           </div>
         </form>
+        <div class="text-center">
+          <p class="inline mr-2">Already have an account?</p>
+          <RouterLink to="/login" class="link link-primary">Login</RouterLink>
+        </div>
       </div>
     </div>
   </div>
