@@ -6,12 +6,20 @@ const logout = () => {
   clearUser()
   router.push('/login')
 }
+
+const goToProfile = () => {
+  router.push('/profile')
+}
+
+const goHome = () => {
+  router.push('/')
+}
 </script>
 
 <template>
   <div class="navbar bg-base-100">
     <div class="flex-1">
-      <a class="btn btn-ghost text-xl">GoForum</a>
+      <a class="btn btn-ghost text-xl" @click="goHome">Vue & A</a>
     </div>
     <div class="flex-none">
       <div class="dropdown dropdown-end">
@@ -28,7 +36,7 @@ const logout = () => {
           class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
         >
           <li>
-            <a class="justify-between">
+            <a class="justify-between" @click="goToProfile">
               Profile
               <span class="badge">New</span>
             </a>

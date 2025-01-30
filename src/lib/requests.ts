@@ -23,3 +23,33 @@ export const fetchUser = async (userId: number, token: string): Promise<UserInfo
   })
   return response.data
 }
+
+type ThreadIds = number[]
+
+export type Thread = {
+  id: number
+  content: string
+  title: string
+  isPublic: boolean
+  creatorId: number
+  createdAt: string
+  lock: boolean
+  likes: number[]
+  watchees: number[]
+}
+
+export const fetchThreads = async (start: number, token: string): Promise<Thread[]> => {
+  const response = await ForumClient.get<ThreadIds>('/threads', {
+    params: { start: start },
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const threads = await Promise.all(
+    response.data.map((id) =>
+      ForumClient.get<Thread>('/thread', {
+        params: { id: id },
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ),
+  )
+  return threads.map((thread) => thread.data)
+}
