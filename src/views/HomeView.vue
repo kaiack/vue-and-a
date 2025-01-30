@@ -45,6 +45,7 @@ const {
   queryFn: ({ pageParam }: { pageParam: number }) => fetchThreads(pageParam, userInfo.token),
   initialPageParam: 0,
   getNextPageParam: (lastPage: Thread[], allPages, lastPageParam: number) => {
+    // console.log(lastPage.length)
     if (lastPage.length < 5) {
       return undefined
     }
@@ -56,13 +57,12 @@ const {
 <template>
   <main class="h-full w-full grid grid-cols-10">
     <div class="col-span-4 lg:col-span-2">
-      <!-- <div>{{ JSON.stringify(data) }}</div> -->
-      <div>----------------------------</div>
       <div v-for="(threads, index) in data?.pages" :key="index">
         <div v-for="thread in threads" :key="thread.id">
           {{ thread.title }}
         </div>
       </div>
+      <button class="btn" v-if="hasNextPage" @click="() => fetchNextPage()">Load More</button>
     </div>
     <div class="col-span-6 lg:col-span-8">Post Content...</div>
   </main>
