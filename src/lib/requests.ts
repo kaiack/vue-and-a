@@ -5,7 +5,7 @@ export const ForumClient = axios.create({
   timeout: 1000,
 })
 
-type UserInfo = {
+export type UserInfo = {
   id: number
   email: string
   name: string
