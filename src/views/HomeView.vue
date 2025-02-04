@@ -8,10 +8,18 @@ import {
   type InfiniteData,
   useQueries,
 } from '@tanstack/vue-query'
-import { fetchThreads, fetchUser, ForumClient, type Thread } from '@/lib/requests'
+import {
+  fetchThread,
+  fetchThreads,
+  fetchUser,
+  ForumClient,
+  type Thread,
+  type UserInfo,
+} from '@/lib/requests'
 import { clearUser, getUserInfo } from '@/lib/utils'
 import router from '@/router'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import ListCard from '@/components/ListCard.vue'
 
 // Access QueryClient instance
 const queryClient = useQueryClient()
@@ -43,7 +51,7 @@ const {
   isError,
   // } = useInfiniteQuery<Thread[], Error, Thread[], string[], number>({
 } = useInfiniteQuery<Thread[], Error, InfiniteData<Thread[], unknown>, QueryKey, number>({
-  queryKey: ['threads', userInfo.token],
+  queryKey: ['threads'],
   queryFn: ({ pageParam }: { pageParam: number }) => fetchThreads(pageParam, userInfo.token),
   initialPageParam: 0,
   getNextPageParam: (lastPage: Thread[], allPages, lastPageParam: number) => {
@@ -54,49 +62,100 @@ const {
   },
 })
 
-const users = computed<number[] | undefined>(() =>
-  data?.value?.pages.flat(1).map((thread) => thread.creatorId),
+const users = computed<number[] | undefined>(() => [
+  ...new Set(data?.value?.pages.flat(1).map((thread) => thread.creatorId)),
+])
+
+const queries = computed(
+  () =>
+    users.value?.map((userId) => {
+      return {
+        queryKey: ['user', userId],
+        queryFn: () => fetchUser(userId, userInfo.token), // TODO: Add longer cache time to this query
+        staleTime: 60 * 1000,
+      }
+    }) || [],
 )
 
-// const queries = computed(
-//   () =>
-//     users.value?.map((userId) => {
-//       return {
-//         queryKey: ['user', userId],
-//         queryFn: () => fetchUser(userId, userInfo.token), // TODO: Add longer cache time to this query
-//       }
-//     }) || [],
-// )
-
-const queries2 = computed(() => {
-  console.log(data.value?.pages.length)
-  return data.value?.pages.length
-    ? data.value.pages.flat(1).map((thread) => {
-        return {
-          queryKey: ['user', thread.creatorId],
-          queryFn: () => fetchUser(thread.creatorId, userInfo.token),
-        }
-      })
-    : []
-})
+// const queries2 = computed(() => {
+//   console.log(data.value?.pages.length)
+//   return data.value?.pages.length
+//     ? data.value.pages.flat(1).map((thread) => {
+//         return {
+//           queryKey: ['user', thread.creatorId],
+//           queryFn: () => fetchUser(thread.creatorId, userInfo.token),
+//           staleTime: 60 * 1000,
+//         }
+//       })
+//     : []
+// })
 
 // How to deal with potenitally undefined value????? what to do???
-const userQueries = useQueries({ queries: queries2 }) // YOU HAVE TO PASS IT THE COMPUTED VALUE RAW, DONT DO QUERIES.VALUE. WTF THOUGH!!?? THESE DOCS ARE ASS
+const userQueries = useQueries({ queries: queries }) // YOU HAVE TO PASS IT THE COMPUTED VALUE RAW, DONT DO QUERIES.VALUE. WTF THOUGH!!?? THESE DOCS ARE ASS
+const usersMap = computed(
+  () => new Map(userQueries.value.map((user) => [user.data?.id, { ...user.data }])),
+)
+const currentThreadId = ref<number>(-1)
+const isEnabled = computed(() => {
+  return currentThreadId.value !== -1
+})
+const {
+  isPending: isThreadPending,
+  isError: isThreadError,
+  data: threadData, // WHY THIS NO WORKY???!?!?
+  error: ThreadError,
+  refetch,
+} = useQuery({
+  queryKey: ['thread', currentThreadId], // KEY HAS TO BE THE REF ITSELF NOT THE VALUE FOR THIS TO WORK!!!
+  queryFn: () => fetchThread(currentThreadId.value, userInfo.token),
+  staleTime: 30 * 1000,
+  enabled: isEnabled,
+  // For some reason, this needs to be an arrow function that returns that function rather than the function itself like in the docs?!?!
+})
+// const currentThread = computed<Thread | null>(() => {
+//   return threadInfo.value ? threadInfo.value : null
+// })
+const fetchThreadData = (threadId: number) => {
+  currentThreadId.value = threadId
+  // refetch()
+}
 </script>
 
 <template>
-  <main class="h-full w-full grid grid-cols-10">
-    <div class="col-span-4 lg:col-span-2">
+  <main class="h-full w-full grid grid-cols-10 bg-base-100">
+    <div
+      class="col-span-4 lg:col-span-2 px-2 border-r-2 border-solid border-neutral-content rounded-3xl pt-2 bg-base-200"
+    >
       <div v-for="(threads, index) in data?.pages" :key="index" class="">
-        <div v-for="thread in threads" :key="thread.id" class="">
+        <!-- <div v-for="thread in threads" :key="thread.id" class="">
           {{ thread.title }}
-        </div>
+          {{ usersMap.get(thread.creatorId)?.name }}
+        </div> -->
+        <ListCard
+          v-for="thread in threads"
+          :created-at="thread.createdAt"
+          :creator="usersMap.get(thread.creatorId)?.name || ''"
+          :title="thread.title"
+          :likes="thread.likes.length"
+          :isLiked="thread.likes.includes(userInfo.userId)"
+          :key="thread.id"
+          class="mb-4 bg-base-100 text-secondary-content"
+          @click="fetchThreadData(thread.id)"
+        />
       </div>
-      <button class="btn" v-if="hasNextPage" @click="() => fetchNextPage()">Load More</button>
-      <div v-for="user in userQueries" :key="user.data?.id">
-        {{ user.data?.name }}
+      <div class="flex w-full justify-center">
+        <button class="btn bg-accent" v-if="hasNextPage" @click="() => fetchNextPage()">
+          Load More
+        </button>
       </div>
     </div>
-    <div class="col-span-6 lg:col-span-8">Post Content...</div>
+    <div class="col-span-6 lg:col-span-8 p-4">
+      <div v-if="threadData">
+        <div>{{ threadData.title }}</div>
+        <div>{{ threadData.content }}</div>
+        <div>{{ threadData.likes }}</div>
+        <div>{{ threadData.createdAt }}</div>
+      </div>
+    </div>
   </main>
 </template>

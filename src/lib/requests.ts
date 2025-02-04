@@ -39,12 +39,12 @@ export type Thread = {
 }
 
 export const fetchThreads = async (start: number, token: string): Promise<Thread[]> => {
-  const response = await ForumClient.get<ThreadIds>('/threads', {
+  const threadIds = await ForumClient.get<ThreadIds>('/threads', {
     params: { start: start },
     headers: { Authorization: `Bearer ${token}` },
   })
   const threads = await Promise.all(
-    response.data.map((id) =>
+    threadIds.data.map((id) =>
       ForumClient.get<Thread>('/thread', {
         params: { id: id },
         headers: { Authorization: `Bearer ${token}` },
@@ -52,4 +52,12 @@ export const fetchThreads = async (start: number, token: string): Promise<Thread
     ),
   )
   return threads.map((thread) => thread.data)
+}
+
+export const fetchThread = async (threadId: number, token: string): Promise<Thread> => {
+  const thread = await ForumClient.get<Thread>('/thread', {
+    params: { id: threadId },
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  return thread.data
 }

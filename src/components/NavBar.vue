@@ -17,9 +17,9 @@ const goHome = () => {
 </script>
 
 <template>
-  <div class="navbar bg-base-100">
+  <div class="navbar bg-base-100 border-b-2 border-neutral-content">
     <div class="flex-1">
-      <a class="btn btn-ghost text-xl" @click="goHome">Vue & A</a>
+      <a class="btn btn-ghost text-xl text-primary" @click="goHome">Vue & A</a>
     </div>
     <div class="flex-none">
       <div class="dropdown dropdown-end">
