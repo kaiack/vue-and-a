@@ -136,7 +136,7 @@ const fetchThreadData = (threadId: number) => {
         </button>
       </div>
     </div>
-    <div class="col-span-6 lg:col-span-8 p-4">
+    <div class="col-span-6 lg:col-span-8 lg:p-6">
       <ThreadView :thread-id="currentThreadId" />
     </div>
   </main>

@@ -24,11 +24,16 @@ const {
   enabled: isEnabled,
   // For some reason, this needs to be an arrow function that returns that function rather than the function itself like in the docs?!?!
 })
+
+// TODO Fetch Comment data here as well
 </script>
 <template>
   <div class="flex justify-center h-full">
-    <div v-if="threadData">
-      <ThreadMain :thread="threadData" />
+    <div v-if="threadData" class="w-full flex lg:pl-10 lg:pr-0 px-5 justify-center">
+      <div class="w-full">
+        <ThreadMain :thread="threadData" />
+      </div>
+      <!-- Add Comments component here -->
     </div>
     <div v-else-if="isLoading" class="flex justify-center mt-5">
       <span class="loading loading-spinner loading-lg"></span>
