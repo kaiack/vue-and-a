@@ -20,7 +20,8 @@ import { clearUser, getUserInfo } from '@/lib/utils'
 import router from '@/router'
 import { computed, ref } from 'vue'
 import ListCard from '@/components/ListCard.vue'
-import ThreadMain from '@/components/ThreadMain.vue'
+
+import ThreadView from './ThreadView.vue'
 
 // Access QueryClient instance
 const queryClient = useQueryClient()
@@ -97,22 +98,7 @@ const usersMap = computed(
   () => new Map(userQueries.value.map((user) => [user.data?.id, { ...user.data }])),
 )
 const currentThreadId = ref<number>(-1)
-const isEnabled = computed(() => {
-  return currentThreadId.value !== -1
-})
-const {
-  isPending: isThreadPending,
-  isError: isThreadError,
-  data: threadData, // WHY THIS NO WORKY???!?!?
-  error: ThreadError,
-  refetch,
-} = useQuery({
-  queryKey: ['thread', currentThreadId], // KEY HAS TO BE THE REF ITSELF NOT THE VALUE FOR THIS TO WORK!!!
-  queryFn: () => fetchThread(currentThreadId.value, userInfo.token),
-  staleTime: 30 * 1000,
-  enabled: isEnabled,
-  // For some reason, this needs to be an arrow function that returns that function rather than the function itself like in the docs?!?!
-})
+
 // const currentThread = computed<Thread | null>(() => {
 //   return threadInfo.value ? threadInfo.value : null
 // })
@@ -151,9 +137,7 @@ const fetchThreadData = (threadId: number) => {
       </div>
     </div>
     <div class="col-span-6 lg:col-span-8 p-4">
-      <div v-if="threadData">
-        <ThreadMain :thread="threadData" />
-      </div>
+      <ThreadView :thread-id="currentThreadId" />
     </div>
   </main>
 </template>
