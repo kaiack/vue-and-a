@@ -20,6 +20,7 @@ import { clearUser, getUserInfo } from '@/lib/utils'
 import router from '@/router'
 import { computed, ref } from 'vue'
 import ListCard from '@/components/ListCard.vue'
+import ThreadMain from '@/components/ThreadMain.vue'
 
 // Access QueryClient instance
 const queryClient = useQueryClient()
@@ -151,10 +152,7 @@ const fetchThreadData = (threadId: number) => {
     </div>
     <div class="col-span-6 lg:col-span-8 p-4">
       <div v-if="threadData">
-        <div>{{ threadData.title }}</div>
-        <div>{{ threadData.content }}</div>
-        <div>{{ threadData.likes }}</div>
-        <div>{{ threadData.createdAt }}</div>
+        <ThreadMain :thread="threadData" />
       </div>
     </div>
   </main>
