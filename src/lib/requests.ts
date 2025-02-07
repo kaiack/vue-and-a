@@ -80,7 +80,7 @@ export const fetchThread = async (threadId: number, token: string): Promise<Thre
 
 export const fetchComments = async (threadId: number, token: string): Promise<Comment[]> => {
   const comments = await ForumClient.get<Comment[]>('/comments', {
-    params: { id: threadId },
+    params: { threadId },
     headers: { Authorization: `Bearer ${token}` },
   })
 

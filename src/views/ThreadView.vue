@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { fetchThread, fetchUser } from '@/lib/requests'
+import { fetchComments, fetchThread, fetchUser } from '@/lib/requests'
 import { getUserInfo } from '@/lib/utils'
 import { useQuery } from '@tanstack/vue-query'
 import { computed } from 'vue'
@@ -26,7 +26,9 @@ const {
 })
 
 const creatorId = computed(() => threadData.value?.creatorId)
+const threadId2 = computed(() => threadData.value?.id)
 const enableThreadQueries = computed(() => !!threadData.value?.creatorId)
+const enableCommentQueries = computed(() => !!threadData.value?.id)
 
 const {
   isLoading: isUserLoading,
@@ -38,6 +40,18 @@ const {
   queryFn: () => fetchUser(creatorId.value || 1, userInfo.token), // TODO: Better way to handle the creatorId == undefined case?
   staleTime: 60 * 1000,
   enabled: enableThreadQueries,
+})
+
+const {
+  isLoading: isCommmentsLoading,
+  isError: isCommentError,
+  error: commentError,
+  data: commentsData,
+} = useQuery({
+  queryKey: ['comments', threadId2],
+  queryFn: () => fetchComments(threadId2.value || 0, userInfo.token), // TODO: Better way to handle the creatorId == undefined case?
+  staleTime: 5 * 1000,
+  enabled: enableCommentQueries,
 })
 
 // TODO Fetch Comment data here as well
