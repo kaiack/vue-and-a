@@ -37,6 +37,22 @@ export type Thread = {
   likes: number[]
   watchees: number[]
 }
+// ID              int64   `json:"id"`
+// Content         string  `json:"content"`
+// CreatorId       int64   `json:"creatorId"` // Foreign Key
+// ThreadId        int64   `json:"threadId"`  // Foreign Key
+// ParentCommentId *int64  `json:"parentCommentId"`
+// CreatedAt       string  `json:"createdAt"`
+// Likes           []int64 `json:"likes"`
+export type Comment = {
+  id: number
+  content: string
+  creatorId: number
+  threadId: number
+  parentCommentId: number
+  createdAt: string
+  likes: number[]
+}
 
 export const fetchThreads = async (start: number, token: string): Promise<Thread[]> => {
   const threadIds = await ForumClient.get<ThreadIds>('/threads', {
@@ -60,4 +76,13 @@ export const fetchThread = async (threadId: number, token: string): Promise<Thre
     headers: { Authorization: `Bearer ${token}` },
   })
   return thread.data
+}
+
+export const fetchComments = async (threadId: number, token: string): Promise<Comment[]> => {
+  const comments = await ForumClient.get<Comment[]>('/comments', {
+    params: { id: threadId },
+    headers: { Authorization: `Bearer ${token}` },
+  })
+
+  return comments.data
 }

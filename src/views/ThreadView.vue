@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { fetchThread } from '@/lib/requests'
+import { fetchThread, fetchUser } from '@/lib/requests'
 import { getUserInfo } from '@/lib/utils'
 import { useQuery } from '@tanstack/vue-query'
 import { computed } from 'vue'
@@ -25,13 +25,28 @@ const {
   // For some reason, this needs to be an arrow function that returns that function rather than the function itself like in the docs?!?!
 })
 
+const creatorId = computed(() => threadData.value?.creatorId)
+const enableThreadQueries = computed(() => !!threadData.value?.creatorId)
+
+const {
+  isLoading: isUserLoading,
+  isError,
+  error,
+  data: creatorData,
+} = useQuery({
+  queryKey: ['user', creatorId],
+  queryFn: () => fetchUser(creatorId.value || 1, userInfo.token), // TODO: Better way to handle the creatorId == undefined case?
+  staleTime: 60 * 1000,
+  enabled: enableThreadQueries,
+})
+
 // TODO Fetch Comment data here as well
 </script>
 <template>
   <div class="flex justify-center h-full">
     <div v-if="threadData" class="w-full flex lg:pl-10 lg:pr-0 px-5 justify-center">
       <div class="w-full">
-        <ThreadMain :thread="threadData" />
+        <ThreadMain :thread="threadData" :creator="creatorData" />
       </div>
       <!-- Add Comments component here -->
     </div>
