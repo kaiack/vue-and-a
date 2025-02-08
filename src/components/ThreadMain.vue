@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import type { Thread, UserInfo } from '@/lib/requests'
+import type { Comment, Thread, UserInfo } from '@/lib/requests'
 import { getUserInfo } from '@/lib/utils'
 import { computed } from 'vue'
+import ThreadComment from './ThreadComment.vue'
+import type { nestedComment } from '@/views/ThreadView.vue'
 
-const props = defineProps<{ thread: Thread; creator: UserInfo | undefined }>()
+const props = defineProps<{
+  thread: Thread
+  creator: UserInfo | undefined
+  comments: nestedComment[]
+}>()
 const userInfo = getUserInfo()
 // TODO: Add default creator value here
 const creatorInfo = computed<UserInfo>(() =>
@@ -96,6 +102,15 @@ const creatorInfo = computed<UserInfo>(() =>
         </div>
 
         <p>{{ props.thread.content }}</p>
+        <div class="mt-8">
+          <h2 class="font-bold text-2xl">Comments</h2>
+          <ThreadComment
+            v-for="comment in comments"
+            :comment="comment"
+            :key="comment.id"
+            class="mt-3"
+          />
+        </div>
       </div>
     </div>
   </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { fetchComments, fetchThread, fetchUser } from '@/lib/requests'
+import type { Comment } from '@/lib/requests'
 import { getUserInfo } from '@/lib/utils'
 import { useQuery } from '@tanstack/vue-query'
 import { computed } from 'vue'
@@ -54,13 +55,36 @@ const {
   enabled: enableCommentQueries,
 })
 
+export type nestedComment = Comment & { children: nestedComment[] }
+
+const rootComments = computed(() => {
+  const map = new Map()
+  const roots: nestedComment[] = []
+
+  // First, build a map where each key is a comment id and value is the comment itself
+  commentsData.value?.forEach((comment) => {
+    map.set(comment.id, { ...comment, children: [] })
+  })
+
+  // Then, assign comments to their parent based on parentCommentId
+  commentsData.value?.forEach((comment) => {
+    if (comment.parentCommentId === null) {
+      roots.push(map.get(comment.id))
+    } else {
+      const parent = map.get(comment.parentCommentId)
+      parent.children.push(map.get(comment.id))
+    }
+  })
+
+  return roots
+})
 // TODO Fetch Comment data here as well
 </script>
 <template>
   <div class="flex justify-center h-full">
     <div v-if="threadData" class="w-full flex lg:pl-10 lg:pr-0 px-5 justify-center">
       <div class="w-full">
-        <ThreadMain :thread="threadData" :creator="creatorData" />
+        <ThreadMain :thread="threadData" :creator="creatorData" :comments="rootComments" />
       </div>
       <!-- Add Comments component here -->
     </div>
